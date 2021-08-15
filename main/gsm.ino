@@ -15,7 +15,7 @@ char url[] = "api.thingspeak.com/update?api_key=OBMUL3QGC46S3T0L&status";
 uint16_t statuscode;
 int16_t length;
 
-void gsmInit()
+void gsmStart()
 {  
   fonaSerial->begin(9600);
   //simss.println("AT+CSCLK=2");
@@ -72,6 +72,7 @@ uint16_t getBatteryPercentage()
 
 void sendPayload(char *payload)
 {
+  Serial.print("Start payload send");
   if (!gprs_on)
   {
     turnOnGSM();
@@ -93,3 +94,9 @@ void sendPayload(char *payload)
 // void parseCommands(char *commands){
 
 // }
+
+void gsmStop()
+{  
+  fonaSerial->end();
+  //simss.println("AT+CSCLK=2");
+}

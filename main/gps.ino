@@ -1,32 +1,59 @@
 TinyGPS gps;
-char buf[32];
-
+char buff[32];
 NeoSWSerial ss(GPS_RXPin, GPS_TXPin);
 
-void gpsInit(){
-  ss.begin(4800);
+void gpsStart() {
+  ss.begin(GPSBaud);
+  delay(100);
+  ss.read();
 }
+
 void getCoordinates(char *&coordinates)
-{
-  //Serial.println("Turning on GPS");  
+{  
   gpsInitPins();
-  delay(2000);
+  delay(100);
+  Serial.print("Attempting to wake GPS module.. ");
   gpsOn();
-  delay(2000);
-  //while (ss.available())ss.read();
-  //Serial.println("Getting coordinates");
+  Serial.println("done.");
+  delay(100);
+  Serial.println("Getting coordinates");
+  delay(100);
   float la, lo;
-  unsigned long age = TinyGPS::GPS_INVALID_DATE;
-  unsigned long date = 0;
-  while (age == TinyGPS::GPS_INVALID_AGE | age > 1000)
+  unsigned long age;
+  float prec = TinyGPS::GPS_INVALID_HDOP;
+  delay(100);
+  while (prec == TinyGPS::GPS_INVALID_HDOP | prec > 4)
   {
-    gps.f_get_position(&la, &lo, &age);
+    bool newData = false;
+    unsigned long chars;
+    unsigned short sentences, failed;
+    for (unsigned long start = millis(); millis() - start < 1000;)
+    {
+      while (ss.available())
+      {
+        char c = ss.read();
+        if (gps.encode(c))
+          newData = true;
+      }
+    }
+
+    if (newData)
+    {
+      gps.f_get_position(&la, &lo, &age);
+      delay(1000);      
+      prec = gps.hdop() / 100;
+    }
   }
-  strcpy(coordinates, "{\"lat\":");
-  sprintf(behind(coordinates), "%f", la);
-  sprintf(behind(coordinates), ",\"long\":");
-  sprintf(behind(coordinates), "%f", lo);
-  sprintf(behind(coordinates), "}");
-  //Serial.println("Turning off GPS");
-  gpsOff();
+  Serial.println("Got fix");
+  char slat[10];
+  char slon[10];
+  dtostrf(la, 4, 6, slat);
+  dtostrf(lo, 4, 6, slon);
+  snprintf(coordinates, 40, "{\"lat\": %s, \"long\": %s}", slat, slon);
+  delay(100);
+  Serial.println("Turning off GPS");
+}
+
+void gpsStop() {
+  ss.end();
 }
