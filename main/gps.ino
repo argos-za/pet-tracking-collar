@@ -4,8 +4,6 @@ NeoSWSerial ss(GPS_RXPin, GPS_TXPin);
 
 void gpsStart() {
   ss.begin(GPSBaud);
-  delay(100);
-  ss.read();
 }
 
 void getCoordinates(char *&coordinates)

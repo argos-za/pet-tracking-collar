@@ -2,43 +2,33 @@
 #define FONA_TX 10
 #define FONA_RST 9
 
-AltSoftSerial simss(FONA_TX, FONA_RX);
-AltSoftSerial *fonaSerial = &simss;
-
+NeoSWSerial simss(FONA_TX, FONA_RX);
 Adafruit_FONA sim = Adafruit_FONA(FONA_RST);
 
 uint8_t net_status;
 boolean gprs_on = false;
 
-char url[] = "api.thingspeak.com/update?api_key=OBMUL3QGC46S3T0L&status";
+char url[] = "api.thingspeak.com/update?api_key=OBMUL3QGC46S3T0L&status=";
+char http_cmd[255];
 
 uint16_t statuscode;
 int16_t length;
 
 void gsmStart()
-{  
-  fonaSerial->begin(9600);
-  //simss.println("AT+CSCLK=2");
-}
+{
+  simss.begin(9600);
 
-void turnOnGSM()
-{  
-  while (sim.available()) {
-    Serial.write(sim.read());
+  if (! sim.begin(simss)) {
+    Serial.println("Couldn't find SIM800L");
+    while (1);
+  }
 
-    while (net_status != 1)
+  Serial.println("SIM800L is OK"); 
+  delay(3000);
+  net_status = sim.getNetworkStatus();
+  while (net_status != 1)
   {
-    Serial.println("Connecting to network");
     net_status = sim.getNetworkStatus();
-    Serial.print(F("Network status "));
-    Serial.print(net_status);
-    Serial.print(F(": "));
-    if (net_status == 0) Serial.println(F("Not registered"));
-    if (net_status == 1) Serial.println(F("Registered (home)"));
-    if (net_status == 2) Serial.println(F("Not registered (searching)"));
-    if (net_status == 3) Serial.println(F("Denied"));
-    if (net_status == 4) Serial.println(F("Unknown"));
-    if (net_status == 5) Serial.println(F("Registered roaming"));
     delay(5000);
   }
   while (!gprs_on)
@@ -58,9 +48,6 @@ void turnOnGSM()
       sim.setHTTPSRedirect(true);
     }
   }
-  }
-  
-  
 }
 
 uint16_t getBatteryPercentage()
@@ -71,15 +58,19 @@ uint16_t getBatteryPercentage()
 }
 
 void sendPayload(char *payload)
-{
-  Serial.print("Start payload send");
+{  
   if (!gprs_on)
   {
-    turnOnGSM();
+    gsmStart();
   }
   else
   {
-    sim.HTTP_POST_start(url, F("text/plain"), (uint8_t *)payload, strlen(payload), &statuscode, (uint16_t *)&length);
+    Serial.print("Start payload send");
+    strcpy(http_cmd, url);
+    strcat(http_cmd, "=");
+    strcat(http_cmd, payload);
+    Serial.print(http_cmd);
+    sim.HTTP_GET_start(http_cmd, &statuscode, (uint16_t *)&length);
     while (length > 0)
     {
       while (sim.available())
@@ -97,6 +88,8 @@ void sendPayload(char *payload)
 
 void gsmStop()
 {  
-  fonaSerial->end();
+  sim.enableGPRS(false);
+  Serial.print("GPRS now turned off");
+  simss.end();
   //simss.println("AT+CSCLK=2");
 }

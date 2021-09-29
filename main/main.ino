@@ -1,10 +1,8 @@
 #include <Arduino.h>
 #include "TinyGPS.h"
 #include "GPS.h"
-#include <AltSoftSerial.h>
 #include <NeoSWSerial.h>
 #include <Adafruit_FONA.h>
-#include <stdio.h>
 
 unsigned long startTime;
 unsigned long endTime;
@@ -23,7 +21,6 @@ void loop()
     startTime = millis();
     poll();
     endTime = millis();
-    Serial.print(frequency - (endTime - startTime));
     delay(frequency - (endTime - startTime));
 }
 
@@ -35,17 +32,18 @@ void poll()
     gpsStop();
     delay(1000);
     Serial.print("Coordinates: ");
-    Serial.println(coordinates);        
+    Serial.println(coordinates);    
+    delay(1000);    
     gsmStart();
     delay(1000);
     generatePayload(coordinates, payload);
-    delay(100);
+    delay(1000);
     Serial.print("Payload: ");
     Serial.println(payload);
-    delay(100);
+    delay(1000);
     sendPayload(payload);
     gsmStop();
-    Serial.print("Done");
+    Serial.println("Done");
 }
 
 void generatePayload(char *coordinates, char *&payload)
