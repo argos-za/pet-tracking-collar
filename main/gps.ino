@@ -4,19 +4,14 @@ NeoSWSerial ss(GPS_RXPin, GPS_TXPin);
 
 void gpsStart() {
   ss.begin(GPSBaud);
-  delay(100);
-  ss.read();
 }
 
 void getCoordinates(char *&coordinates)
 {  
   gpsInitPins();
   delay(100);
-  Serial.print("Attempting to wake GPS module.. ");
   gpsOn();
-  Serial.println("done.");
   delay(100);
-  Serial.println("Getting coordinates");
   delay(100);
   float la, lo;
   unsigned long age;
@@ -44,14 +39,12 @@ void getCoordinates(char *&coordinates)
       prec = gps.hdop() / 100;
     }
   }
-  Serial.println("Got fix");
   char slat[10];
   char slon[10];
   dtostrf(la, 4, 6, slat);
   dtostrf(lo, 4, 6, slon);
   snprintf(coordinates, 40, "{\"lat\": %s, \"long\": %s}", slat, slon);
   delay(100);
-  Serial.println("Turning off GPS");
 }
 
 void gpsStop() {
