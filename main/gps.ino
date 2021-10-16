@@ -17,7 +17,7 @@ void getCoordinates(char *&coordinates)
   unsigned long age;
   float prec = TinyGPS::GPS_INVALID_HDOP;
   delay(100);
-  while (prec == TinyGPS::GPS_INVALID_HDOP | prec > 4)
+  while (prec == TinyGPS::GPS_INVALID_HDOP | prec > 6)
   {
     bool newData = false;
     unsigned long chars;
@@ -37,13 +37,14 @@ void getCoordinates(char *&coordinates)
       gps.f_get_position(&la, &lo, &age);
       delay(1000);      
       prec = gps.hdop() / 100;
+      Serial.println(prec);
     }
   }
   char slat[10];
   char slon[10];
   dtostrf(la, 4, 6, slat);
   dtostrf(lo, 4, 6, slon);
-  snprintf(coordinates, 40, "{\"lat\": %s, \"long\": %s}", slat, slon);
+  snprintf(coordinates, 40, "\"lat\": %s, \"long\": %s", slat, slon);
   delay(100);
 }
 

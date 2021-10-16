@@ -12,37 +12,41 @@ char *coordinates = new char[40]();
 
 void setup()
 {
-    Serial.begin(115200);
-    aes_init();
+  Serial.begin(115200);
+  Serial.println("starting");
+  aes_init();
 }
 
 void loop()
 {
-    startTime = millis();
-    poll();
-    endTime = millis();
-    delay(frequency - (endTime - startTime));
+  startTime = millis();
+  poll();
+  endTime = millis();
+  delay(frequency - (endTime - startTime));
 }
 
 void poll()
 {
-    gpsStart();
-    getCoordinates(coordinates);
-    gpsStop();
-    delay(1000);
-    delay(1000);    
-    gsmStart();
-    delay(1000);
-    generatePayload(coordinates, payload);
-    delay(1000);
-    delay(1000);
-    sendPayload(payload);
-    gsmStop();
+  gpsStart();
+  getCoordinates(coordinates);
+  gpsStop();
+  delay(1000);
+  delay(1000);
+  gsmStart();
+  delay(1000);
+  generatePayload(coordinates, payload);
+  Serial.println(payload);
+  delay(1000);
+  delay(1000);
+  //sendPayload(payload);
+  gsmStop();
 }
 
 void generatePayload(char *coordinates, char *&payload)
 {
-    strcpy(payload, "{\"sn\":\"argos1\",");
-    sprintf(behind(payload), "%s", coordinates);
-    sprintf(behind(payload), ", \"batt\": %d}", getBatteryPercentage());
+  char imei[16] = {0};
+  getImei(imei);
+  sprintf(payload, "{\"sn\":\"%s\",", imei);
+  sprintf(behind(payload), "%s", coordinates);
+  sprintf(behind(payload), ", \"batt\": %d}", getBatteryPercentage());
 }
