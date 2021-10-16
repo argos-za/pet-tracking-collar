@@ -12,6 +12,7 @@ Adafruit_FONA sim = Adafruit_FONA(FONA_RST);
 uint8_t net_status;
 boolean gprs_on = false;
 
+char url[] = "http://102.132.200.59:7777/api/location";
 uint16_t statuscode;
 int16_t length;
 
@@ -81,12 +82,11 @@ byte enc_iv_to[] = {0x61, 0x6c, 0x77, 0x61, 0x79, 0x73, 0x77, 0x61, 0x74, 0x63, 
 void sendPayload(char *payload)
 {
   memcpy(enc_iv, enc_iv_to, sizeof(enc_iv_to));
-  uint16_t encLen = encrypt((char*)payload, 77, enc_iv);
-  Serial.println((char*)ciphertext);
+  uint16_t encLen = encrypt((char*)payload, 77, enc_iv);  
   delay(100);
-  char url[] = "http://102.132.200.59:7777/location";
+  
   if (!sim.HTTP_POST_start(url, F("text/plain"), (uint8_t *)ciphertext, strlen(ciphertext), &statuscode, (uint16_t *)&length)) {
-
+    Serial.println(F("Failed"));
   }
   else {
     sim.HTTP_POST_end();
@@ -96,5 +96,6 @@ void sendPayload(char *payload)
 void gsmStop()
 {
   sim.enableGPRS(false);
+  gprs_on = false;
   simss.end();
 }
