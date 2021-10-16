@@ -7,7 +7,7 @@
 unsigned long startTime;
 unsigned long endTime;
 unsigned long frequency = 300000;
-char *payload = new char[255]();
+char payload[110];
 char *coordinates = new char[40]();
 
 void setup()
@@ -31,22 +31,19 @@ void poll()
   getCoordinates(coordinates);
   gpsStop();
   delay(1000);
-  delay(1000);
   gsmStart();
   delay(1000);
   generatePayload(coordinates, payload);
-  Serial.println(payload);
   delay(1000);
-  delay(1000);
-  //sendPayload(payload);
+  sendPayload(payload);
   gsmStop();
 }
 
-void generatePayload(char *coordinates, char *&payload)
+void generatePayload(char *coordinates, char *payload)
 {
   char imei[16] = {0};
   getImei(imei);
   sprintf(payload, "{\"sn\":\"%s\",", imei);
   sprintf(behind(payload), "%s", coordinates);
-  sprintf(behind(payload), ", \"batt\": %d}", getBatteryPercentage());
+  sprintf(behind(payload), ",\"batt\":%d}", getBatteryPercentage());
 }
