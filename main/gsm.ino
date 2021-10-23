@@ -12,7 +12,7 @@ Adafruit_FONA sim = Adafruit_FONA(FONA_RST);
 uint8_t net_status;
 boolean gprs_on = false;
 
-char url[] = "http://102.132.200.59:7777/api/location";
+char url[] = "http://13.244.247.184:4000/api/location";
 uint16_t statuscode;
 int16_t length;
 
@@ -50,18 +50,10 @@ void gsmStart()
     net_status = sim.getNetworkStatus();
     delay(5000);
   }
-  while (!gprs_on)
+  
+  if (!sim.enableGPRS(true))
   {
-    if (!sim.enableGPRS(true))
-    {
-      delay(2000);
-      gprs_on = false;
-    }
-    else
-    {
-      delay(2000);
-      gprs_on = true;
-    }
+    gsmStart();
   }
 }
 
@@ -96,6 +88,5 @@ void sendPayload(char *payload)
 void gsmStop()
 {
   sim.enableGPRS(false);
-  gprs_on = false;
   simss.end();
 }

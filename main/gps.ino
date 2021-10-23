@@ -12,12 +12,12 @@ void getCoordinates(char *&coordinates)
   delay(100);
   gpsOn();
   delay(100);
-  delay(100);
   float la, lo;
   unsigned long age;
   float prec = TinyGPS::GPS_INVALID_HDOP;
   delay(100);
-  while (prec == TinyGPS::GPS_INVALID_HDOP | prec > 6)
+  unsigned long gpsStart = millis();
+  while ((prec == TinyGPS::GPS_INVALID_HDOP || prec > 5) && millis() - gpsStart < 60000)
   {
     bool newData = false;
     unsigned long chars;
@@ -43,10 +43,14 @@ void getCoordinates(char *&coordinates)
   char slon[10];
   dtostrf(la, 4, 6, slat);
   dtostrf(lo, 4, 6, slon);
-  snprintf(coordinates, 40, "\"lat\":%s,\"long\":%s", slat, slon);
-  delay(100);
+  if (abs(la) > 1 && abs(lo) > 1){
+    validCoordinates = true;
+    snprintf(coordinates, 40, "\"lat\":%s,\"long\":%s", slat, slon);
+    delay(100);
+  }
 }
 
 void gpsStop() {
+  gpsOff();
   ss.end();
 }
