@@ -17,7 +17,7 @@ void getCoordinates(char *&coordinates)
   float prec = TinyGPS::GPS_INVALID_HDOP;
   delay(100);
   unsigned long gpsStart = millis();
-  while ((prec == TinyGPS::GPS_INVALID_HDOP || prec > 5) && millis() - gpsStart < 60000)
+  while ((prec == TinyGPS::GPS_INVALID_HDOP | prec > 5) && millis() - gpsStart < 120000)
   {
     bool newData = false;
     unsigned long chars;
